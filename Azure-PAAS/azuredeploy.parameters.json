@@ -1,0 +1,60 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AppSvcPlanName": {
+      "value": "HelloSvcPlan"
+    },
+    "svcPlanSku": {
+      "value": "Standard"
+    },
+    "skuName": {
+      "value": "F1"
+    },
+    "skuCapacity": {
+      "value": 1
+    },
+    "webSiteName": {
+      "value": "Hello"
+    },
+    "slotName": {
+      "value": "staging"
+    },
+    "storageAccountType": {
+      "value": "Standard_RAGRS"
+    },
+    "storageAccountName": {
+      "value": "storagehello"
+    },
+    "AppInsightsName": {
+      "value": "AppIns-Hello"
+    },
+    "TMProfileName": {
+      "value": "HelloTrafficManager"
+    },
+    "sqlserverName": {
+      "value": "hellosqlserver"
+    },
+    "sqlAdministratorLogin": {
+      "value": "hellouser"
+    },
+    "sqlAdministratorLoginPassword": {
+      "value": ""
+    },
+    "databaseName": {
+      "value": "HelloGen"
+    },
+    "redisCacheName": {
+      "value": "HelloRedisCache"
+    },
+    "redisCacheFamily": {
+      "value": "C"
+    },
+    "redisCacheSKU": {
+      "value": "Standard"
+    },
+    "redisCacheCapacity": {
+      "value": 0
+    }
+  }
+}
