@@ -1,0 +1,23 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serverName": {
+      "Value": "sqlsvrname"
+    },
+    "serverLocation": {
+      "Value": "Central US"
+    },
+    "administratorLogin": {
+      "Value": "admin"
+    },
+    "databaseName": {
+      "Value": "dbname"
+    },
+    "administratorLoginPassword": {
+      "Value": ""
+    }
+
+  }
+}
+

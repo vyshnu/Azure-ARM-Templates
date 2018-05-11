@@ -1,0 +1,21 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "siteName": {
+      "Value": "FrameworkDemo"
+    },
+    "hostingPlanName": {
+      "Value": "FrameDemo"
+    },
+    "siteLocation": {
+      "Value": "Central US"
+    },
+    "msdeployPackageUri": {
+      "Value": "https://abc.blob.core.windows.net/msdeploypackages/WebDeployPackage.zip" 
+    },
+    "skuplan": {
+      "Value": "Standard"
+    }
+  }
+}
