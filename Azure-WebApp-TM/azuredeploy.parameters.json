@@ -1,0 +1,40 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AppSvcPlanName": {
+      "value": "HelloSvcPlan"
+    },
+    "svcPlanSku": {
+      "value": "Standard"
+    },
+    "skuName": {
+      "value": "F1"
+    },
+    "skuCapacity": {
+      "value": 1
+    },
+    "webSiteName": {
+      "value": "HelloWebsite"
+    },
+    "slotName": {
+      "value": "staging"
+    },
+    "storageAccountType": {
+      "value": "Standard_RAGRS"
+    },
+    "storageAccountName": {
+      "value": "storagehello"
+    },
+    "existingDiagnosticsStorageAccountName": {
+      "value": "storagehello"
+    },
+    "AppInsightsName": {
+      "value": "AppIns-HelloWebsite"
+    },
+    "TMProfileName": {
+      "value": "HelloTM"
+    }
+
+  }
+}

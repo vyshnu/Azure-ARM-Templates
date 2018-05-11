@@ -1,0 +1,376 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AppSvcPlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App service Plan"
+      }
+    },
+    "svcPlanSku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "The pricing tier of the App Service plan."
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "F1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
+    "skuCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Describes plan's instance count"
+      }
+    },
+
+    "webSiteName": {
+      "type": "string",
+      "defaultValue": "HelloWebsite",
+      "metadata": {
+        "description": "The name of the website"
+      }
+    },
+    "slotName": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "staging"
+    },
+
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_ZRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "Storage Account type"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Storage Account"
+      }
+    },
+    "redisCacheName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Azure Redis Cache to create."
+      }
+    },
+    "redisCacheSKU": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "defaultValue": "Premium",
+      "metadata": {
+        "description": "The pricing tier of the new Azure Redis Cache."
+      }
+    },
+    "redisCacheFamily": {
+      "type": "string",
+      "defaultValue": "P",
+      "metadata": {
+        "description": "The family for the sku."
+      }
+    },
+    "redisCacheCapacity": {
+      "type": "int",
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "defaultValue": 2,
+      "metadata": {
+        "description": "The size of the new Azure Redis Cache instance. "
+      }
+    },
+    "existingDiagnosticsStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing storage account for diagnostics."
+      }
+    },
+    "enableNonSslPort": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "A boolean value that indicates whether to allow access via non-SSL ports."
+      }
+    },
+    "diagnosticsStatus": {
+      "type": "string",
+      "defaultValue": "ON",
+      "allowedValues": [
+        "ON",
+        "OFF"
+      ],
+      "metadata": {
+        "description": "A value that indicates whether diagnostices is enabled. Use ON or OFF."
+      }
+    },
+    "AppInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "The Name for the App Insights"
+      }
+    },
+    "TMProfileName": {
+      "type": "string",
+      "metadata": {
+        "description": "The Profile Name for the Traffic Manager"
+      }
+    }
+
+
+
+  },
+  "variables": {
+    "Locations": [ "West US", "Central US" ],
+    "farmName": "default",
+    "index": [ "", "API" ],
+    "appsvplan": [ "WestUS", "CentralUS" ],
+    "wusappsv": [ "-WUS", "API-WUS" ],
+    "cusappsv": [ "-CUS", "API-CUS" ],
+    "tmpname": [ "", "API-" ],
+    "tmpdns": ["dnsname","api.dnsname"]
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('storageAccountName')]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[parameters('storageAccountType')]"
+      },
+      "kind": "BlobStorage",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "name": "[parameters('AppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "location": "southcentralus",
+      "kind": "web",
+      "dependsOn": [
+      ],
+      "tags": {
+        "displayName": "AppInsightsComponent"
+      },
+      "properties": {
+        "ApplicationId": "[parameters('AppInsightsName')]"
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('redisCacheName')]",
+      "type": "Microsoft.Cache/Redis",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+      ],
+      "properties": {
+        "enableNonSslPort": "[parameters('enableNonSslPort')]",
+        "sku": {
+          "capacity": "[parameters('redisCacheCapacity')]",
+          "family": "[parameters('redisCacheFamily')]",
+          "name": "[parameters('redisCacheSKU')]"
+        }
+
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-07-01",
+          "type": "Microsoft.Cache/redis/providers/diagnosticsettings",
+          "name": "[concat(parameters('redisCacheName'), '/Microsoft.Insights/service')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Cache/Redis/', parameters('redisCacheName'))]"
+          ],
+          "properties": {
+            "status": "[parameters('diagnosticsStatus')]",
+            "storageAccountName": "[parameters('existingDiagnosticsStorageAccountName')]"
+          }
+        }
+      ]
+    },
+
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(parameters('AppSvcPlanName'), variables('appsvplan')[copyIndex()])]",
+      "type": "Microsoft.Web/serverfarms",
+      "kind": "app",
+      "copy": {
+        "name": "farmloop",
+        "count": 2
+      },
+      "location": "[variables('Locations')[copyIndex()]]",
+      "sku": {
+        "name": "S1",
+        "tier": "[parameters('svcPlanSku')]"
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(parameters('webSiteName'),variables('wusappsv')[copyIndex()])]",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "copy": {
+        "name": "apiloop",
+        "count": 2
+      },
+      "location": "West US",
+      "dependsOn": [
+        "[concat(parameters('AppSvcPlanName'), variables('appsvplan')[copyIndex(0)])]",
+        "[concat('Microsoft.Cache/Redis/', parameters('redisCacheName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[concat(parameters('AppSvcPlanName'), variables('appsvplan')[copyIndex(0)])]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "name": "[parameters('slotName')]",
+          "type": "slots",
+          "location": "[variables('Locations')[copyIndex()]]",
+          "dependsOn": [
+            "[concat(parameters('webSiteName'),variables('wusappsv')[copyIndex()])]",
+            "[concat('Microsoft.Cache/Redis/', parameters('redisCacheName'))]"
+          ],
+          "properties": {},
+          "resources": [
+          ]
+        }
+      ]
+
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(parameters('webSiteName'),variables('cusappsv')[copyIndex()])]",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "copy": {
+        "name": "apiloop",
+        "count": 2
+      },
+      "location": "Central US",
+      "dependsOn": [
+        "[concat(parameters('AppSvcPlanName'), variables('appsvplan')[copyIndex(1)])]",
+        "[concat('Microsoft.Cache/Redis/', parameters('redisCacheName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[concat(parameters('AppSvcPlanName'), variables('appsvplan')[copyIndex(1)])]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "name": "[parameters('slotName')]",
+          "type": "slots",
+          "location": "[variables('Locations')[copyIndex()]]",
+          "dependsOn": [
+            "[concat(parameters('webSiteName'),variables('cusappsv')[copyIndex()])]",
+            "[concat('Microsoft.Cache/Redis/', parameters('redisCacheName'))]"
+          ],
+          "properties": {},
+          "resources": [
+          ]
+        }
+      ]
+
+    },
+    {
+      "apiVersion": "2015-11-01",
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "name": "[concat(variables('tmpname')[copyIndex()],parameters('TMProfileName')) ]",
+      "copy": {
+        "name": "profileloop",
+        "count": 2
+      },
+      "location": "global",
+      "dependsOn": [
+        "[concat('Microsoft.Web/sites/',parameters('webSiteName'),variables('wusappsv')[copyIndex()])]",
+        "[concat('Microsoft.Web/sites/',parameters('webSiteName'),variables('cusappsv')[copyIndex()])]"
+      ],
+      "properties": {
+        "profileStatus": "Enabled",
+        "trafficRoutingMethod": "Performance",
+        "dnsConfig": {
+          "relativeName": "variables('tmpdns')[copyIndex()])",
+          "ttl": 30
+        },
+        "monitorConfig": {
+          "protocol": "HTTP",
+          "port": 80,
+          "path": "/"
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-11-01",
+          "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+          "dependsOn": [
+            "[concat('Microsoft.Network/trafficManagerProfiles/',variables('index')[copyIndex()],parameters('webSiteName'))]",
+            "[concat('Microsoft.Web/sites/',parameters('webSiteName'),variables('index')[copyIndex()]) ]"
+          ],
+          "location": "global",
+          "name": "[concat(parameters('webSiteName'),'-',variables('Locations')[copyIndex()])]",
+          "copy": {
+            "name": "endpointloop",
+            "count": 2
+          },
+          "properties": {
+            "targetResourceId": "[resourceId('Microsoft.Web/sites/', concat(parameters('webSiteName'), copyIndex()))]",
+            "endpointStatus": "Enabled"
+          }
+        }
+      ]
+    }
+
+  ]
+}
+
+
+    
